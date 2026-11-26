@@ -52,10 +52,11 @@ function download(req, res) {
 }
 
 function getFilePath(id) {
-  if (!UUID_PATTERN.test(id)) {
+  const fileName = path.basename(id);
+  if (fileName !== id || !UUID_PATTERN.test(fileName)) {
     throw new Error('Identificador de arquivo inválido.');
   }
-  return path.join(storagePath, id);
+  return path.join(storagePath, fileName);
 }
 
 module.exports = { upload, list, download };
