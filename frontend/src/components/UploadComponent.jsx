@@ -10,7 +10,11 @@ export default function UploadComponent({ onUpload, uploading }) {
       return;
     }
 
-    await onUpload(file, description.trim());
+    const uploaded = await onUpload(file, description.trim());
+    if (!uploaded) {
+      return;
+    }
+
     setFile(null);
     setDescription('');
     event.target.reset();

@@ -32,8 +32,10 @@ export default function App() {
     try {
       await uploadDocument(file, description);
       await loadDocuments();
+      return true;
     } catch (requestError) {
       setError(requestError.message);
+      return false;
     } finally {
       setUploading(false);
     }
