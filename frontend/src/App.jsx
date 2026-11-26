@@ -1,20 +1,60 @@
-// Seed do componente raiz do Document Management System.
-//
-// Este é apenas um ponto de partida mínimo. Durante o Passo 3 você vai usar o
-// Agent Mode do GitHub Copilot para construir os componentes:
-//   - components/UploadComponent
-//   - components/DocumentList
-//   - components/DownloadButton
-// e o serviço services/ que consome a API do backend via fetch.
+import { useEffect, useState } from 'react';
+import { getDocuments, uploadDocument } from './services/documentApi';
+import DocumentList from './components/DocumentList';
+import UploadComponent from './components/UploadComponent';
+import './App.css';
 
 export default function App() {
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+
+  async function loadDocuments() {
+    try {
+      const result = await getDocuments();
+      setDocuments(result);
+      setError('');
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadDocuments();
+  }, []);
+
+  async function handleUpload(file, description) {
+    setUploading(true);
+    setError('');
+    try {
+      await uploadDocument(file, description);
+      await loadDocuments();
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
-      <h1>Document Management System</h1>
-      <p>
-        Seed do frontend. Construa a interface durante o Passo 3 usando o Agent
-        Mode do GitHub Copilot.
-      </p>
+    <main className="app">
+      <header className="page-header">
+        <h1>Documentos</h1>
+        <p>Envie documentos e consulte o resumo de cada arquivo.</p>
+      </header>
+
+      <UploadComponent onUpload={handleUpload} uploading={uploading} />
+      {error && <p className="error-message" role="alert">{error}</p>}
+
+      <section className="documents-section" aria-labelledby="documents-heading">
+        <h2 id="documents-heading">Documentos enviados</h2>
+        {loading
+          ? <p>Carregando documentos...</p>
+          : <DocumentList documents={documents} />}
+      </section>
     </main>
   );
 }
